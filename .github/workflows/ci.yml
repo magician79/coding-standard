@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pragmatic:
+    name: Pragmatic checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate composer
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHP syntax lint (php-parallel-lint)
+        run: |
+          vendor/bin/parallel-lint --version
+          vendor/bin/parallel-lint --colors -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .
+          status=$?
+          if [ "$status" -eq 254 ]; then
+            echo "[parallel-lint] No PHP files to check. Skipping."
+            exit 0
+          else
+            exit "$status"
+          fi
+
+      - name: PHPCS (Pragmatic ruleset)
+        run: |
+          vendor/bin/phpcs --version
+          vendor/bin/phpcs --standard=ruleset/phpcs.pragmatic.xml -q .
+
+      - name: PHPStan (Pragmatic profile)
+        run: |
+          vendor/bin/phpstan --version
+          vendor/bin/phpstan analyse -c phpstan/pragmatic.neon.dist --no-progress .
+
+  strict:
+    name: Strict checks (non-blocking)
+    runs-on: ubuntu-latest
+    needs: pragmatic
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHP syntax lint (php-parallel-lint strict mode)
+        run: |
+          vendor/bin/parallel-lint --colors -j 8 --no-progress --blame --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .
+
+      - name: PHPCS (Strict ruleset)
+        run: |
+          vendor/bin/phpcs --standard=ruleset/phpcs.strict.xml -q .
+
+      - name: PHPStan (Strict profile)
+        run: |
+          vendor/bin/phpstan analyse -c phpstan/strict.neon.dist --no-progress
