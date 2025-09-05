@@ -70,4 +70,4 @@ jobs:
 
       - name: PHPStan (Strict profile)
         run: |
-          vendor/bin/phpstan analyse -c phpstan/strict.neon.dist --no-progress
+          vendor/bin/phpstan analyse -c phpstan/strict.neon.dist --no-progress .
