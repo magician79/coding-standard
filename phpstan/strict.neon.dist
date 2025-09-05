@@ -4,7 +4,9 @@ includes:
 
 parameters:
   level: max
-  bleedingEdge: true
 
   # Encourage explicitness
   inferPrivatePropertyTypeFromConstructor: true
+
+  # Helpful sanity check: fail if an @ignore pattern doesn't match anything
+  reportUnmatchedIgnoredErrors: true
