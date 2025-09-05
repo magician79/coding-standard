@@ -29,16 +29,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: PHP syntax lint (php-parallel-lint)
-        run: |
-          vendor/bin/parallel-lint --version
-          vendor/bin/parallel-lint --colors -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .
-          status=$?
-          if [ "$status" -eq 254 ]; then
-            echo "[parallel-lint] No PHP files to check. Skipping."
-            exit 0
-          else
-            exit "$status"
-          fi
+        run: composer lint:php
 
       - name: PHPCS (Pragmatic ruleset)
         run: |
@@ -71,8 +62,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: PHP syntax lint (php-parallel-lint strict mode)
-        run: |
-          vendor/bin/parallel-lint --colors -j 8 --no-progress --blame --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .
+        run: composer lint:php:strict
 
       - name: PHPCS (Strict ruleset)
         run: |
