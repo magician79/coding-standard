@@ -1,0 +1,7 @@
+parameters:
+  # Keep only safe shared defaults. Don’t set paths or tmpDir here.
+  parallel:
+    maximumNumberOfProcesses: 4
+
+  excludePaths:
+    - ../vendor/*

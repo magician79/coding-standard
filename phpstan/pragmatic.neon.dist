@@ -1,0 +1,16 @@
+includes:
+  - common.neon
+
+parameters:
+  level: 6
+
+  # Keep behaviour similar to your previous lenient setup by ignoring
+  # missing iterable value and generic typehints via new identifiers.
+  ignoreErrors:
+    -
+      identifier: missingType.iterableValue
+    -
+      identifier: missingType.generics
+
+  # Helpful inference without being overly strict
+  inferPrivatePropertyTypeFromConstructor: true
