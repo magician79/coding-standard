@@ -34,7 +34,7 @@ jobs:
       - name: PHPCS (Pragmatic ruleset)
         run: |
           vendor/bin/phpcs --version
-          vendor/bin/phpcs --standard=ruleset/phpcs.pragmatic.xml -q .
+          vendor/bin/phpcs --standard=ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q .
 
       - name: PHPStan (Pragmatic profile)
         run: |
@@ -66,7 +66,7 @@ jobs:
 
       - name: PHPCS (Strict ruleset)
         run: |
-          vendor/bin/phpcs --standard=ruleset/phpcs.strict.xml -q .
+          vendor/bin/phpcs --standard=ruleset/phpcs.strict.xml --ignore=vendor/* -q .
 
       - name: PHPStan (Strict profile)
         run: |
