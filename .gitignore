@@ -1,0 +1,29 @@
+# Composer
+/vendor/
+/composer.lock
+
+# PHPStan cache (consumer projects may use var/cache/phpstan, but package repo can ignore its own var dir)
+/var/
+
+# Node (if docs tooling ever added)
+/node_modules/
+
+# IDEs & OS
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
+
+# Build/Artifacts
+/build/
+/dist/
+
+# Coverage/Reports (if added later)
+/coverage/
+/.phpunit.result.cache
+
+# Logs
+*.log
+
+# Misc
+.env
