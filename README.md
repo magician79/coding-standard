@@ -1,67 +1,107 @@
-### Magician79 Coding Standard
+# Magician79 Coding Standard
 [![CI](https://github.com/magician79/coding-standard/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/magician79/coding-standard/actions/workflows/ci.yml)
 
-Shared coding standards for PHP projects: PHPCS (PSR-12 + Slevomat), PHPStan (pragmatic/strict profiles), and PHP syntax linting via php-parallel-lint. Packaged for easy reuse across repositories.
+Shared coding standards for PHP projects:
 
-#### What this package provides
-- PHPCS rulesets:
-  - Pragmatic profile (default): PSR-12 + curated Slevomat sniffs with low noise and high auto-fix coverage.
-  - Strict profile (opt-in): PSR-12 + the full Slevomat standard (with a few global excludes). Best for greenfield or teams seeking maximum rigor.
-- PHPStan configurations:
-  - Pragmatic profile (default): level 6 plus noise reduction toggles.
-  - Strict profile (opt-in): level max, bleedingEdge, and phpstan-strict-rules included.
-- PHP syntax linting:
-  - php-parallel-lint (fast, parallel parse error detection)
-  - Optional var-dump checker to block accidental debug prints.
-- Optional Composer scripts (examples) you can copy into consumer projects.
-- Out-of-the-box tooling: this package requires PHPCS, Slevomat, PHPStan, php-parallel-lint, and the installer plugin, so consumers don’t need to install them separately.
+- **PHPCS** — PSR-12 + Slevomat (Pragmatic and Strict profiles)
+- **PHPStan** — Pragmatic and Strict configs
+- **Syntax linting** — via php-parallel-lint (with optional var-dump check)
+
+Packaged for easy reuse across repositories with sensible defaults and stricter opt-ins.
 
 ---
 
-### Installation
+## Table of Contents
+
+- [What this package provides](#what-this-package-provides)
+- [Installation](#installation)
+- [PHPCS ruleset profiles](#phpcs-ruleset-profiles)
+- [PHPStan profiles](#phpstan-profiles)
+- [PHP syntax linting](#php-syntax-linting-php-parallel-lint)
+- [Quick usage options](#quick-usage-options)
+- [Choosing a PHPCS profile](#choosing-a-phpcs-profile)
+- [Excluding or tuning sniffs](#excluding-or-tuning-sniffs)
+- [PHPStan: extend in a project](#phpstan-extend-in-a-project-recommended-for-larger-repos)
+- [Composer and installation behavior](#composer-and-installation-behavior-faq)
+- [CI examples](#ci-examples-consumer-project)
+- [Pre-commit hook example](#pre-commit-hook-example-consumer-project)
+- [Versioning and upgrade policy](#versioning-and-upgrade-policy)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
+---
+
+## What this package provides
+
+- **PHPCS rulesets**
+  - *Pragmatic* (default): PSR-12 + curated Slevomat sniffs with low noise and high auto-fix coverage.
+  - *Strict* (opt-in): PSR-12 + full Slevomat (with a few global excludes). Noisier but rigorous.
+
+- **PHPStan configurations**
+  - *Pragmatic* (default): Level 6 + noise reduction toggles.
+  - *Strict* (opt-in): Level max, bleedingEdge, phpstan-strict-rules included.
+
+- **PHP syntax linting**
+  - `php-parallel-lint` (fast, parallel parse error detection)
+  - Optional `var-dump-check` to block accidental debug prints.
+
+- **Optional Composer scripts**
+  - Predefined tasks (`cs`, `stan`, `check`, etc.) for quick setup.
+
+- **Out-of-the-box tooling**
+  - PHPCS, Slevomat, PHPStan, php-parallel-lint are bundled so consumers don’t need to install them separately.
+
+---
+
+## Installation
 
 Install in your project as a dev dependency:
+
 ```bash
 composer require --dev magician79/coding-standard:^1.0
 ```
-This installs (into your project’s vendor/):
-- squizlabs/php_codesniffer
-- slevomat/coding-standard
-- dealerdirect/phpcodesniffer-composer-installer (auto-registers standards)
-- phpstan/phpstan (+ phpstan/phpstan-strict-rules)
-- php-parallel-lint/php-parallel-lint (+ optional: php-parallel-lint/php-var-dump-check, php-parallel-lint/php-console-highlighter)
 
-Note: Tools are present when you run `composer install` (dev mode). They are omitted in production installs: `composer install --no-dev`.
+This installs (into your project’s `vendor/`):
+
+- `squizlabs/php_codesniffer`
+- `slevomat/coding-standard`
+- `dealerdirect/phpcodesniffer-composer-installer`
+- `phpstan/phpstan` (+ `phpstan/phpstan-strict-rules`)
+- `php-parallel-lint/php-parallel-lint`
+- (optional) `php-parallel-lint/php-var-dump-check`, `php-parallel-lint/php-console-highlighter`
+
+Note: tools are installed in dev mode (`composer install`). They are omitted in production installs (`composer install --no-dev`).
 
 ---
 
-### PHPCS ruleset profiles
+## PHPCS ruleset profiles
 
 There are two PHPCS profiles in this package:
 
-- Pragmatic profile (recommended default)
+- **Pragmatic profile (recommended default)**
   - File: `vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml`
-  - Intent: Low-friction adoption. Enforces `declare(strict_types=1)`, type hints, imports hygiene, strict comparisons, unused code cleanup, and a pragmatic line length rule. Most findings are auto-fixable via phpcbf.
+  - Intent: Low-friction adoption. Enforces `declare(strict_types=1)`, type hints, imports hygiene, strict comparisons, unused code cleanup, and a pragmatic line length rule. Most findings are auto-fixable via `phpcbf`.
 
-- Strict profile (opt-in)
+- **Strict profile (opt-in)**
   - File: `vendor/magician79/coding-standard/ruleset/phpcs.strict.xml`
-  - Intent: Maximum rigor by enabling the entire Slevomat standard (noisier). Ideal for new code. Expect to exclude or tune some sniffs to match project preferences.
+  - Intent: Maximum rigor by enabling the entire Slevomat standard. Best for new projects or modules. Expect to exclude or tune some sniffs.
 
 ---
 
-### PHPStan profiles
+## PHPStan profiles
 
 This package ships two PHPStan configurations:
 
-- Pragmatic (default)
+- **Pragmatic (default)**
   - File: `vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist`
-  - Level 6 with noise-reducing toggles. Designed for quick adoption on existing code.
+  - Level 6 with noise-reducing toggles. Designed for adoption on existing code.
 
-- Strict (opt-in)
+- **Strict (opt-in)**
   - File: `vendor/magician79/coding-standard/phpstan/strict.neon.dist`
-  - Level max, bleedingEdge, phpstan-strict-rules included, unmatched @ignore reporting. Best for greenfield modules or when modernizing code.
+  - Level max, phpstan-strict-rules included. Ideal for greenfield modules.
 
 Run directly:
+
 ```bash
 # Pragmatic
 vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist
@@ -72,33 +112,37 @@ vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/strict.n
 
 ---
 
-### PHP syntax linting (php-parallel-lint)
+## PHP syntax linting (php-parallel-lint)
 
-php-parallel-lint runs a fast, parallel parse check of your PHP files. It catches hard failures (syntax/parse errors, stray merge markers) before PHPCS or PHPStan run.
+`php-parallel-lint` runs a fast, parallel parse check of your PHP files. It catches syntax/parse errors before PHPCS or PHPStan run.
 
 Useful flags:
 - `-j 8` or higher for concurrency
 - `--colors` for readable output
 - `--exclude` to skip vendor/cache/build directories
-- `--blame` to show the author of the failing line (helpful in repos with multiple contributors)
+- `--blame` to show the author of the failing line
 
 Run directly:
+
 ```bash
 # Basic syntax check (fast fail)
 vendor/bin/parallel-lint --colors -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .
 ```
 
 Optional: disallow debug prints using `php-var-dump-check`:
+
 ```bash
 vendor/bin/var-dump-check --skip-dir=vendor --skip-dir=var --skip-dir=storage --skip-dir=cache .
 ```
 
 ---
 
-### Quick usage options
+## Quick usage options
 
-#### Option A: Use the shared profiles directly via Composer scripts
-Add scripts to your project’s `composer.json`:
+### Option A: Use shared profiles via Composer scripts
+
+Add to your project’s `composer.json`:
+
 ```json
 {
   "scripts": {
@@ -125,21 +169,24 @@ Add scripts to your project’s `composer.json`:
   }
 }
 ```
+
 Run:
 - `composer lint:php`
 - `composer cs`
 - `composer fix`
 - `composer stan`
-- `composer check` (runs syntax lint → PHPCS → PHPStan)
+- `composer check` (syntax lint → PHPCS → PHPStan)
 
-#### Option B: Extend rules in a project `phpcs.xml` (recommended for larger projects)
+#### Option B: Extend rules in your project (recommended for larger projects)
+
 Create `phpcs.xml` in your project root:
+
 ```xml
 <?xml version="1.0"?>
 <ruleset name="Project Standard">
   <!-- Choose one to start from -->
   <rule ref="vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml"/>
-  <!-- or -->
+  <!-- Or use strict -->
   <!-- <rule ref="vendor/magician79/coding-standard/ruleset/phpcs.strict.xml"/> -->
 
   <!-- Scope your paths -->
@@ -173,18 +220,13 @@ Run:
 
 ---
 
-### Choosing a PHPCS profile
+## Choosing a PHPCS profile
 
-- Start with Pragmatic for existing/legacy code to get quick wins with minimal friction. It emphasizes:
-  - `declare(strict_types=1)`
-  - Type hints (parameters/returns/properties)
-  - Imports hygiene (unused uses, ordering)
-  - Strict comparisons
-  - Unused variables/parameters
-  - Auto-fixable cleanup rules
-- Use Strict for new projects or modules where you’re comfortable meeting broader Slevomat expectations. It references the entire Slevomat standard and may require additional exclusions to align with your preferences.
+- **Pragmatic**: best for existing/legacy code.
+- **Strict**: best for new projects or modernized code.
 
-You can mix: keep Pragmatic globally and selectively enforce Strict on specific paths:
+You can also mix: Pragmatic globally, Strict on certain paths:
+
 ```xml
 <file>src/NewModule</file>
 <rule ref="vendor/magician79/coding-standard/ruleset/phpcs.strict.xml">
@@ -194,34 +236,36 @@ You can mix: keep Pragmatic globally and selectively enforce Strict on specific 
 
 ---
 
-### Excluding or tuning sniffs
+## Excluding or tuning sniffs
 
 You can always exclude or adjust any sniff in your project’s `phpcs.xml`:
+
 - Disable globally:
-```xml
-<exclude name="SlevomatCodingStandard.Functions.UnusedParameter"/>
-```
-- Demote an error to a warning:
-```xml
-<rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators">
-  <properties>
-    <property name="error" value="false"/>
-    <property name="warning" value="true"/>
-  </properties>
-</rule>
-```
+  ```xml
+  <exclude name="SlevomatCodingStandard.Functions.UnusedParameter"/>
+  ```
+
+- Demote error to warning:
+  ```xml
+  <rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators">
+    <properties>
+      <property name="error" value="false"/>
+      <property name="warning" value="true"/>
+    </properties>
+  </rule>
+  ```
+
 - Exclude by path:
-```xml
-<exclude-pattern>src/Legacy/*</exclude-pattern>
-```
+  ```xml
+  <exclude-pattern>src/Legacy/*</exclude-pattern>
+  ```
 
 ---
 
-### PHPStan: extend in a project (recommended for larger repos)
+## PHPStan: extend in a project (recommended for larger repos)
 
-Extend in a project (recommended for larger repos):
+Pragmatic baseline:
 
-phpstan.neon.dist (Pragmatic baseline with project overrides)
 ```neon
 includes:
   - vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist
@@ -239,7 +283,7 @@ parameters:
 #   - phpstan-baseline.neon
 ```
 
-Or strict:
+Or Strict mode:
 ```neon
 includes:
   - vendor/magician79/coding-standard/phpstan/strict.neon.dist
@@ -273,21 +317,23 @@ Performance tips:
 
 ---
 
-### Composer and installation behavior (FAQ)
+## Composer and installation behavior (FAQ)
 
-- Add this package under `require-dev` in consumer projects. When you run `composer install` (dev mode), the tools from this package’s `require` are installed into the consumer’s `vendor/`.
-- In production installs (`composer install --no-dev`), this package is not installed and none of the tooling is present.
+- Add under `require-dev` in consumer projects.
+- In dev installs, all tools are present.
+- In production (`--no-dev`), the package is omitted and none of the tooling is present.
 - Rule of thumb:
   - Shared package: put tools in `require` so they’re available whenever the consumer installs your package as a dev dependency.
   - Consumer project: add `magician79/coding-standard` under `require-dev`.
 
 ---
 
-### CI examples (consumer project)
+## CI examples (consumer project)
 
 Run php-parallel-lint first to fail fast, then PHPCS and PHPStan.
 
 Minimal pragmatic job:
+
 ```yaml
 name: Code Quality
 
@@ -349,7 +395,7 @@ jobs:
 
 ---
 
-### Pre-commit hook example (consumer project)
+## Pre-commit hook example (consumer project)
 
 ```sh
 #!/bin/sh
@@ -357,14 +403,16 @@ vendor/bin/parallel-lint -j 8 --exclude vendor --exclude var --exclude storage -
 vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml || exit 1
 vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist || exit 1
 ```
+
 Make executable:
+
 ```sh
 chmod +x .git/hooks/pre-commit
 ```
 
 ---
 
-### Versioning and upgrade policy
+## Versioning and upgrade policy
 
 - SemVer:
   - MAJOR: enabling stricter default rules or changing defaults in a way that could fail existing code.
@@ -374,15 +422,15 @@ chmod +x .git/hooks/pre-commit
 
 ---
 
-### Troubleshooting
+## Troubleshooting
 
-- PHPCS can’t find Slevomat rules: ensure `dealerdirect/phpcodesniffer-composer-installer` is installed (brought by this package). Run `composer dump-autoload` if needed.
-- Too many findings initially: start with Pragmatic; run `phpcbf` to auto-fix; then suppress or exclude remaining sniffs that don’t fit your context.
-- PHPStan seems slow: enable `parallel` in your project config and scope paths to `src` and `tests`.
-- php-parallel-lint finds errors your PHP version accepts: remember it validates against the PHP version it runs under. In CI, use a matrix or the production PHP version to ensure compatibility.
+- **PHPCS can’t find Slevomat rules**: ensure `dealerdirect/phpcodesniffer-composer-installer` is installed (brought by this package). Run `composer dump-autoload` if needed.
+- **Too many findings initially**: start with Pragmatic; run `phpcbf` to auto-fix; then suppress or exclude remaining sniffs that don’t fit your context.
+- **PHPStan seems slow**: enable `parallel` in your project config and scope paths to `src` and `tests`.
+- **php-parallel-lint finds errors your PHP version accepts**: remember it validates against the PHP version it runs under. In CI, use a matrix or the production PHP version to ensure compatibility.
 
 ---
 
-### License
+## License
 
 MIT. See LICENSE in this repository.
