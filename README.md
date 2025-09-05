@@ -1,4 +1,5 @@
 ### Magician79 Coding Standard
+[![CI](https://github.com/magician79/coding-standard/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/magician79/coding-standard/actions/workflows/ci.yml)
 
 Shared coding standards for PHP projects: PHPCS (PSR-12 + Slevomat), PHPStan (pragmatic/strict profiles), and PHP syntax linting via php-parallel-lint. Packaged for easy reuse across repositories.
 
