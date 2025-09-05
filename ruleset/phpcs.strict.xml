@@ -1,12 +1,16 @@
 <?xml version="1.0"?>
 <ruleset name="Magician79 Strict">
-<description>PSR-12 + broad Slevomat coverage (stricter, noisier).</description>
+    <description>PSR-12 + broad Slevomat coverage (stricter, noisier).</description>
 
-<rule ref="PSR12"/>
-<!-- Enable most Slevomat sniffs -->
-<rule ref="SlevomatCodingStandard"/>
+    <rule ref="PSR12"/>
+    <!-- Enable most Slevomat sniffs -->
+    <rule ref="SlevomatCodingStandard"/>
 
-<!-- Global excludes to keep strict mode realistic (example) -->
-<exclude name="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue"/>
-<exclude name="SlevomatCodingStandard.PHP.RequireExplicitAssertion"/>
+    <!-- Replace deprecated UnionTypeHintFormat with DNFTypeHintFormat -->
+    <rule ref="SlevomatCodingStandard.TypeHints.DNFTypeHintFormat"/>
+    <exclude name="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat"/>
+
+    <!-- Global excludes to keep strict mode realistic (example) -->
+    <exclude name="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue"/>
+    <exclude name="SlevomatCodingStandard.PHP.RequireExplicitAssertion"/>
 </ruleset>
