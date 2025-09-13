@@ -1,51 +1,108 @@
 <?xml version="1.0"?>
-<ruleset name="Magician79 Pragmatic">
-    <description>PSR-12 + curated Slevomat rules (low-noise).</description>
+<ruleset name="Magician79 Pragmatic"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/squizlabs/PHP_CodeSniffer/master/phpcs.xsd">
 
-    <rule ref="PSR12"/>
+    <description>
+        Doctrine Coding Standard (PSR-12 + curated Slevomat) with additional pragmatic rules
+        for spacing, imports, and type hints. Designed for low-noise adoption on legacy code,
+        with auto-fixable rules prioritized for readability and consistency.
+    </description>
 
-    <!-- Essentials -->
-    <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes"/>
-    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
-    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint"/>
-    <rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint"/>
+    <!-- Base: Doctrine Coding Standard -->
+    <rule ref="Doctrine">
+        <exclude name="Generic.Formatting.MultipleStatementAlignment.NotSame"/>
+        <exclude name="Squiz.Commenting.FunctionComment.SpacingAfterParamName"/>
+        <exclude name="Squiz.Commenting.FunctionComment.SpacingAfterParamType"/>
+    </rule>
 
-    <!-- Imports hygiene -->
-    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses"/>
-    <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses"/>
-    <rule ref="SlevomatCodingStandard.Namespaces.UseSpacing"/>
-    <rule ref="SlevomatCodingStandard.Namespaces.UseDoesNotStartWithBackslash"/>
-
-    <!-- Prefer imported names instead of FQCNs in code -->
-    <rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly">
+    <!-- Core pragmatic subset -->
+    <rule ref="SlevomatCodingStandard.PHP.DisallowDirectMagicInvokeCall"/>
+    <rule ref="SlevomatCodingStandard.TypeHints.ClassConstantTypeHint">
         <properties>
-            <!-- Pragmatic starting values; tune to your preference -->
-            <property name="allowFullyQualifiedExceptions" value="true"/>
-            <property name="allowFullyQualifiedNameForCollidingClasses" value="true"/>
-            <property name="allowPartialUses" value="false"/>
-            <property name="searchAnnotations" value="true"/>
+            <property name="enableNativeTypeHint" value="false"/>
+        </properties>
+    </rule>
+    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHintSpacing">
+        <properties>
+            <property name="spacesCountBeforeColon" value="1"/>
         </properties>
     </rule>
 
-    <!-- Safer comparisons -->
-    <rule ref="SlevomatCodingStandard.Operators.DisallowEqualOperators"/>
-    <rule ref="SlevomatCodingStandard.ControlStructures.DisallowYodaComparison"/>
-
-    <!-- Cleanup -->
-    <rule ref="SlevomatCodingStandard.Variables.UnusedVariable"/>
-    <rule ref="SlevomatCodingStandard.Functions.UnusedParameter"/>
-
-    <!-- Niceties -->
-    <rule ref="SlevomatCodingStandard.Arrays.TrailingArrayComma"/>
-    <rule ref="SlevomatCodingStandard.PHP.UselessParentheses"/>
-    <rule ref="SlevomatCodingStandard.Functions.StaticClosure"/>
-
-    <!-- Pragmatic line length -->
-    <rule ref="Generic.Files.LineLength">
+    <rule ref="SlevomatCodingStandard.Classes.PropertySpacing">
         <properties>
-            <property name="lineLimit" value="140"/>
-            <property name="absoluteLineLimit" value="180"/>
-            <property name="ignoreComments" value="true"/>
+            <property name="minLinesCountBeforeWithComment" value="1"/>
+            <property name="minLinesCountBeforeWithoutComment" value="1"/>
+            <property name="maxLinesCountBeforeWithComment" value="1"/>
+            <property name="maxLinesCountBeforeWithoutComment" value="1"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.MethodSpacing">
+        <properties>
+            <property name="minLinesCount" value="1"/>
+            <property name="maxLinesCount" value="1"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.ClassStructure">
+        <properties>
+            <property name="groups" type="array">
+                <element value="uses"/>
+                <element value="enum cases"/>
+                <element value="public constants"/>
+                <element value="protected constants"/>
+                <element value="private constants"/>
+                <element value="public static properties"/>
+                <element value="public properties"/>
+                <element value="protected static properties"/>
+                <element value="protected properties"/>
+                <element value="private static properties"/>
+                <element value="private properties"/>
+                <element value="constructor"/>
+                <element value="static constructors"/>
+                <element value="destructor"/>
+                <element value="magic methods"/>
+                <element value="public static abstract methods"/>
+                <element value="public abstract methods"/>
+                <element value="protected static abstract methods"/>
+                <element value="protected abstract methods"/>
+                <element value="public static final methods"/>
+                <element value="public static methods"/>
+                <element value="public final methods"/>
+                <element value="public methods"/>
+                <element value="protected static final methods"/>
+                <element value="protected static methods"/>
+                <element value="protected final methods"/>
+                <element value="protected methods"/>
+                <element value="private static methods"/>
+                <element value="private methods"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.TypeHints.DNFTypeHintFormat">
+        <properties>
+            <property name="enable" value="true"/>
+            <property name="withSpacesAroundOperators" value="no"/>
+            <property name="shortNullable" value="no"/>
+            <property name="nullPosition" value="last"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Arrays.DisallowImplicitArrayCreation"/>
+    <rule ref="SlevomatCodingStandard.Whitespaces.DuplicateSpaces">
+        <properties>
+            <property name="ignoreSpacesInAnnotation" value="true"/>
+            <property name="ignoreSpacesInComment" value="true"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Commenting.DeprecatedAnnotationDeclaration"/>
+    <rule ref="SlevomatCodingStandard.Commenting.InlineDocCommentDeclaration">
+        <properties>
+            <property name="allowDocCommentAboveReturn" value="false"/>
+            <property name="allowAboveNonAssignment" value="false"/>
         </properties>
     </rule>
 </ruleset>
