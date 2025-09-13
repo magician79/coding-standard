@@ -49,7 +49,7 @@ Packaged for easy reuse across repositories with sensible defaults and stricter 
   - Predefined tasks (`cs`, `stan`, `check`, etc.) for quick setup.
 
 - **Out-of-the-box tooling**
-  - PHPCS, Slevomat, PHPStan, php-parallel-lint are bundled so consumers don’t need to install them separately.
+  - PHPCS, Doctrine Coding Standard, Slevomat, PHPStan, php-parallel-lint are bundled so consumers don’t need to install them separately.
 
 ---
 
@@ -58,11 +58,12 @@ Packaged for easy reuse across repositories with sensible defaults and stricter 
 Install in your project as a dev dependency:
 
 ```bash
-composer require --dev magician79/coding-standard:^1.0
+composer require --dev magician79/coding-standard
 ```
 
 This installs (into your project’s `vendor/`):
 
+- `doctrine/coding-standard`
 - `squizlabs/php_codesniffer`
 - `slevomat/coding-standard`
 - `dealerdirect/phpcodesniffer-composer-installer`
@@ -84,7 +85,8 @@ There are two PHPCS profiles in this package:
 
 - **Strict profile (opt-in)**
   - File: `vendor/magician79/coding-standard/ruleset/phpcs.strict.xml`
-  - Intent: Maximum rigor by extending Pragmatic with nearly all Slevomat sniffs. Best for new projects or modules. Expect to exclude or tune some sniffs.
+  - Intent: Maximum rigor by extending the Doctrine baseline and Pragmatic profile with nearly all Slevomat sniffs. Best for new projects or modules. Expect to exclude or tune some sniffs.
+
 ---
 
 ## PHPStan profiles
@@ -148,12 +150,13 @@ Add to your project’s `composer.json`:
     "lint:php": "parallel-lint --colors -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .",
     "lint:debug": "var-dump-check --skip-dir=vendor --skip-dir=var --skip-dir=storage --skip-dir=cache .",
 
-    "cs": "phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml",
-    "cs:strict": "phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml",
-    "fix": "phpcbf --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml",
+    "cs": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcs --standard=phpcs.xml; else vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml; fi'",
+    "cs:strict": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcs --standard=phpcs.xml; else vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml; fi'",
+    "fix": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcbf --standard=phpcs.xml; else vendor/bin/phpcbf --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml; fi'",
+    "fix:strict": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcbf --standard=phpcs.xml; else vendor/bin/phpcbf --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml; fi'", 
 
-    "stan": "phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist",
-    "stan:strict": "phpstan analyse -c vendor/magician79/coding-standard/phpstan/strict.neon.dist",
+    "stan": "sh -c 'if [ -f phpstan.neon.dist ]; then vendor/bin/phpstan analyse -c phpstan.neon.dist; else vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist; fi'",
+    "stan:strict": "sh -c 'if [ -f phpstan.neon.dist ]; then vendor/bin/phpstan analyse -c phpstan.neon.dist; else vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/strict.neon.dist; fi'",
 
     "check": [
       "@lint:php",
@@ -263,6 +266,8 @@ You can always exclude or adjust any sniff in your project’s `phpcs.xml`:
 
 ## PHPStan: extend in a project (recommended for larger repos)
 
+Create a `phpstan.neon.dist` file in your project root and include one of the shared profiles.
+
 Pragmatic baseline:
 
 ```neon
@@ -283,6 +288,7 @@ parameters:
 ```
 
 Or Strict mode:
+
 ```neon
 includes:
   - vendor/magician79/coding-standard/phpstan/strict.neon.dist
@@ -329,7 +335,7 @@ Performance tips:
 
 ## CI examples (consumer project)
 
-Run php-parallel-lint first to fail fast, then PHPCS and PHPStan.
+Run php-parallel-lint first to fail fast, then PHPCS and PHPStan. This workflow uses local config if present, otherwise falls back to vendor defaults.
 
 Minimal pragmatic job:
 
@@ -353,11 +359,21 @@ jobs:
       - name: PHP syntax lint (fast fail)
         run: vendor/bin/parallel-lint --colors -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .
 
-      - name: PHPCS (Pragmatic)
-        run: vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml
+      - name: PHPCS (Pragmatic, local override if exists)
+        run: |
+          if [ -f phpcs.xml ]; then
+            vendor/bin/phpcs --standard=phpcs.xml
+          else
+            vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q .
+          fi
 
-      - name: PHPStan (Pragmatic)
-        run: vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist --no-progress
+      - name: PHPStan (Pragmatic, local override if exists)
+        run: |
+          if [ -f phpstan.neon ]; then
+            vendor/bin/phpstan analyse -c phpstan.neon --no-progress
+          else
+            vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist --no-progress .
+          fi
 ```
 
 Separate jobs for strict profiles:
@@ -365,6 +381,7 @@ Separate jobs for strict profiles:
 jobs:
   rule-pragmatic:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -373,11 +390,26 @@ jobs:
           tools: composer:v2
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/parallel-lint --colors -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .
-      - run: vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml
-      - run: vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist --no-progress
+      
+      - name: PHPCS (Pragmatic, local override if exists)
+        run: |
+          if [ -f phpcs.xml ]; then
+            vendor/bin/phpcs --standard=phpcs.xml
+          else
+            vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q .
+          fi
+
+      - name: PHPStan (Pragmatic, local override if exists)
+        run: |
+          if [ -f phpstan.neon ]; then
+            vendor/bin/phpstan analyse -c phpstan.neon --no-progress
+          else
+            vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist --no-progress .
+          fi
 
   rule-strict:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -386,8 +418,22 @@ jobs:
           tools: composer:v2
       - run: composer install --no-interaction --prefer-dist
       - run: vendor/bin/parallel-lint --colors -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .
-      - run: vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml
-      - run: vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/strict.neon.dist --no-progress
+
+      - name: PHPCS (Strict, local override if exists)
+        run: |
+          if [ -f phpcs.xml ]; then
+            vendor/bin/phpcs --standard=phpcs.xml
+          else
+            vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml --ignore=vendor/* -q .
+          fi
+
+      - name: PHPStan (Strict, local override if exists)
+        run: |
+          if [ -f phpstan.neon ]; then
+            vendor/bin/phpstan analyse -c phpstan.neon --no-progress
+          else
+            vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/strict.neon.dist --no-progress .
+          fi
       # Optionally scope strict to a directory:
       # - run: vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/strict.neon.dist src/NewModule
 ```
@@ -396,14 +442,26 @@ jobs:
 
 ## Pre-commit hook example (consumer project)
 
+Create `.git/hooks/pre-commit`:
+
 ```sh
 #!/bin/sh
 vendor/bin/parallel-lint -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git . || exit 1
-vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml || exit 1
-vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist || exit 1
+
+if [ -f phpcs.xml ]; then
+  vendor/bin/phpcs --standard=phpcs.xml || exit 1
+else
+  vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q . || exit 1
+fi
+
+if [ -f phpstan.neon ]; then
+  vendor/bin/phpstan analyse -c phpstan.neon || exit 1
+else
+  vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist . || exit 1
+fi
 ```
 
-Make executable:
+Make it executable:
 
 ```sh
 chmod +x .git/hooks/pre-commit
@@ -418,7 +476,8 @@ chmod +x .git/hooks/pre-commit
   - MINOR: new profiles, optional rules, docs, examples that don’t change defaults.
   - PATCH: bug fixes and small non-breaking updates.
 - Consumers can pin the package version in `composer.json` and choose when to upgrade.
-- In v1.1.x, the Pragmatic and Strict PHPCS profiles were internally refactored to build on top of the Doctrine Coding Standard. This reduces overlaps and conflicts. External usage (filenames, commands) remains unchanged. Consumers should verify their codebase against the new profiles upon upgrade.
+- As of v2.0.0, the Pragmatic and Strict PHPCS profiles are based on the Doctrine Coding Standard with curated Slevomat rules. This reduces overlaps and conflicts. External usage (filenames, commands) remains unchanged. Consumers should re-check their codebase when upgrading to v2.x.
+
 ---
 
 ## Troubleshooting
