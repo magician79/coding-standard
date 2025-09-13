@@ -3,7 +3,7 @@
 
 Shared coding standards for PHP projects:
 
-- **PHPCS** — PSR-12 + Slevomat (Pragmatic and Strict profiles)
+- **PHPCS** — Doctrine Coding Standard (PSR-12 + curated Slevomat) as a baseline, with Pragmatic and Strict profiles
 - **PHPStan** — Pragmatic and Strict configs
 - **Syntax linting** — via php-parallel-lint (with optional var-dump check)
 
@@ -34,8 +34,8 @@ Packaged for easy reuse across repositories with sensible defaults and stricter 
 ## What this package provides
 
 - **PHPCS rulesets**
-  - *Pragmatic* (default): PSR-12 + curated Slevomat sniffs with low noise and high auto-fix coverage.
-  - *Strict* (opt-in): PSR-12 + full Slevomat (with a few global excludes). Noisier but rigorous.
+  - *Pragmatic* (default): Based on Doctrine coding standard, this profile balances strictness with low noise and high autofix coverage. It avoids overlapping or conflicting PHPCS sniffs by carefully selecting compatible rules.
+  - *Strict* (opt-in): Extends the Pragmatic profile with a stricter set of sniffs from Doctrine and Slevomat for maximum code quality and rigor, suitable for new or greenfield modules.
 
 - **PHPStan configurations**
   - *Pragmatic* (default): Level 6 + noise reduction toggles.
@@ -80,12 +80,11 @@ There are two PHPCS profiles in this package:
 
 - **Pragmatic profile (recommended default)**
   - File: `vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml`
-  - Intent: Low-friction adoption. Enforces `declare(strict_types=1)`, type hints, imports hygiene, strict comparisons, unused code cleanup, and a pragmatic line length rule. Most findings are auto-fixable via `phpcbf`.
+  - Intent: Low-friction adoption. Doctrine baseline + curated Slevomat. Enforces `declare(strict_types=1)`, type hints, imports hygiene, strict comparisons, unused code cleanup, and a pragmatic line length rule. Most findings are auto-fixable via `phpcbf`.
 
 - **Strict profile (opt-in)**
   - File: `vendor/magician79/coding-standard/ruleset/phpcs.strict.xml`
-  - Intent: Maximum rigor by enabling the entire Slevomat standard. Best for new projects or modules. Expect to exclude or tune some sniffs.
-
+  - Intent: Maximum rigor by extending Pragmatic with nearly all Slevomat sniffs. Best for new projects or modules. Expect to exclude or tune some sniffs.
 ---
 
 ## PHPStan profiles
@@ -419,7 +418,7 @@ chmod +x .git/hooks/pre-commit
   - MINOR: new profiles, optional rules, docs, examples that don’t change defaults.
   - PATCH: bug fixes and small non-breaking updates.
 - Consumers can pin the package version in `composer.json` and choose when to upgrade.
-
+- In v1.1.x, the Pragmatic and Strict PHPCS profiles were internally refactored to build on top of the Doctrine Coding Standard. This reduces overlaps and conflicts. External usage (filenames, commands) remains unchanged. Consumers should verify their codebase against the new profiles upon upgrade.
 ---
 
 ## Troubleshooting
