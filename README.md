@@ -150,8 +150,8 @@ Add to your project’s `composer.json`:
     "lint:php": "parallel-lint --colors -j 8 --exclude vendor --exclude var --exclude storage --exclude cache --exclude .git .",
     "lint:debug": "var-dump-check --skip-dir=vendor --skip-dir=var --skip-dir=storage --skip-dir=cache .",
 
-    "cs": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcs --standard=phpcs.xml; else vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml; fi'",
-    "cs:strict": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcs --standard=phpcs.xml; else vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml; fi'",
+    "cs": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcs -p --standard=phpcs.xml; else vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml; fi'",
+    "cs:strict": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcs -p --standard=phpcs.xml; else vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml; fi'",
     "fix": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcbf --standard=phpcs.xml; else vendor/bin/phpcbf --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml; fi'",
     "fix:strict": "sh -c 'if [ -f phpcs.xml ]; then vendor/bin/phpcbf --standard=phpcs.xml; else vendor/bin/phpcbf --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml; fi'", 
 
@@ -362,15 +362,15 @@ jobs:
       - name: PHPCS (Pragmatic, local override if exists)
         run: |
           if [ -f phpcs.xml ]; then
-            vendor/bin/phpcs --standard=phpcs.xml
+            vendor/bin/phpcs -p --standard=phpcs.xml
           else
-            vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q .
+            vendor/bin/phpcs -p --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q .
           fi
 
       - name: PHPStan (Pragmatic, local override if exists)
         run: |
-          if [ -f phpstan.neon ]; then
-            vendor/bin/phpstan analyse -c phpstan.neon --no-progress
+          if [ -f phpstan.neon.dist ]; then
+            vendor/bin/phpstan analyse -c phpstan.neon.dist --no-progress
           else
             vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist --no-progress .
           fi
@@ -394,15 +394,15 @@ jobs:
       - name: PHPCS (Pragmatic, local override if exists)
         run: |
           if [ -f phpcs.xml ]; then
-            vendor/bin/phpcs --standard=phpcs.xml
+            vendor/bin/phpcs -p --standard=phpcs.xml
           else
-            vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q .
+            vendor/bin/phpcs -p --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q .
           fi
 
       - name: PHPStan (Pragmatic, local override if exists)
         run: |
-          if [ -f phpstan.neon ]; then
-            vendor/bin/phpstan analyse -c phpstan.neon --no-progress
+          if [ -f phpstan.neon.dist ]; then
+            vendor/bin/phpstan analyse -c phpstan.neon.dist --no-progress
           else
             vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist --no-progress .
           fi
@@ -422,15 +422,15 @@ jobs:
       - name: PHPCS (Strict, local override if exists)
         run: |
           if [ -f phpcs.xml ]; then
-            vendor/bin/phpcs --standard=phpcs.xml
+            vendor/bin/phpcs -p --standard=phpcs.xml
           else
-            vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml --ignore=vendor/* -q .
+            vendor/bin/phpcs -p --standard=vendor/magician79/coding-standard/ruleset/phpcs.strict.xml --ignore=vendor/* -q .
           fi
 
       - name: PHPStan (Strict, local override if exists)
         run: |
-          if [ -f phpstan.neon ]; then
-            vendor/bin/phpstan analyse -c phpstan.neon --no-progress
+          if [ -f phpstan.neon.dist ]; then
+            vendor/bin/phpstan analyse -c phpstan.neon.dist --no-progress
           else
             vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/strict.neon.dist --no-progress .
           fi
@@ -454,8 +454,8 @@ else
   vendor/bin/phpcs --standard=vendor/magician79/coding-standard/ruleset/phpcs.pragmatic.xml --ignore=vendor/* -q . || exit 1
 fi
 
-if [ -f phpstan.neon ]; then
-  vendor/bin/phpstan analyse -c phpstan.neon || exit 1
+if [ -f phpstan.neon.dist ]; then
+  vendor/bin/phpstan analyse -c phpstan.neon.dist || exit 1
 else
   vendor/bin/phpstan analyse -c vendor/magician79/coding-standard/phpstan/pragmatic.neon.dist . || exit 1
 fi
